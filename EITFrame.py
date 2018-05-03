@@ -26,41 +26,106 @@ class EITFrame:
     block_sizes = OrderedDict([('time_stamp',8), ('dummy',4), ('image',4096), 
         ('min_max_flag',4), ('event_marker',4), ('event_text',30), ('timing_error',4),
         ('medibus',208)])
+
     block_types = OrderedDict([('time_stamp','d'), ('dummy','f'), ('image','1024f'), 
         ('min_max_flag','i'), ('event_marker','i'), ('event_text','30s'), ('timing_error','i'),
         ('medibus','52f')])
 
     def __init__(self, time_stamp=None, dummy=None, image=None, min_max_flag=None, 
         event_marker=None, event_text=None, timing_error=None, medibus=None):
-        self.time_stamp = time_stamp
-        self.dummy = dummy
+        self.__time_stamp = time_stamp
+        self.__dummy = dummy
         if image is None:
-            self.image = np.zeros((32, 32), np.float32)
+            self.__image = np.zeros((32, 32), np.float32)
         else:
-            self.image = image
+            self.__image = image
         if min_max_flag is None:
-            self.min_max_flag = 0
+            self.__min_max_flag = 0
         else:
-            self.min_max_flag = min_max_flag
+            self.__min_max_flag = min_max_flag
         if event_marker is None:
-            self.event_marker = 0
+            self.__event_marker = 0
         else:
-            self.event_marker = event_marker
+            self.__event_marker = event_marker
         if event_text is None:
-            self.event_text = ""
+            self.__event_text = ""
         else:
-            self.event_text = event_text
+            self.__event_text = event_text
         if timing_error is None:
-            self.timing_error = 0
+            self.__timing_error = 0
         else:
-            self.timing_error = timing_error
+            self.__timing_error = timing_error
         if medibus is None:
-            self.medibus = []
+            self.__medibus = []
         else:
-            self.medibus = medibus
+            self.__medibus = medibus
+
+    @property
+    def time_stamp(self):
+        return self.__time_stamp
+
+    @time_stamp.setter
+    def time_stamp(self, value):
+        self.__time_stamp = EITFrame.__tuple_to_scalar(value)
+
+    @property
+    def dummy(self):
+        return self.__dummy
+
+    @dummy.setter
+    def dummy(self, value):
+        self.__dummy = EITFrame.__tuple_to_scalar(value)
+
+    @property
+    def image(self):
+        return self.__image
+
+    @image.setter
+    def image(self, value):
+        if isinstance(value, tuple):
+            self.__image = np.asarray(value, dtype=np.float32).reshape((32, 32))
+
+    @property
+    def min_max_flag(self):
+        return self.__min_max_flag
+
+    @min_max_flag.setter
+    def min_max_flag(self, value):
+        self.__min_max_flag = EITFrame.__tuple_to_scalar(value)
+
+    @property
+    def event_marker(self):
+        return self.__event_marker
+
+    @event_marker.setter
+    def event_marker(self, value):
+        self.__event_marker = EITFrame.__tuple_to_scalar(value)
+
+    @property
+    def event_text(self):
+        return self.__event_text
+
+    @event_text.setter
+    def event_text(self, value):
+        self.__event_text = EITFrame.__tuple_to_scalar(value).decode("utf-8")
+
+    @property
+    def timing_error(self):
+        return self.__timing_error
+
+    @timing_error.setter
+    def timing_error(self, value):
+        self.__timing_error = EITFrame.__tuple_to_scalar(value)
 
     def unpack_frame(self, frame_bytes):
         byte_index = 0
         for i in iter(EITFrame.block_sizes.keys()):
             setattr(self, i, struct.unpack(EITFrame.block_types[i], frame_bytes[byte_index:(byte_index+EITFrame.block_sizes[i])]))
             byte_index = byte_index + EITFrame.block_sizes[i]
+
+    @staticmethod
+    def __tuple_to_scalar(tuple_value):
+        if isinstance(tuple_value, tuple) and len(tuple_value)==1:
+            return tuple_value[0]
+        else:
+            return tuple_value
