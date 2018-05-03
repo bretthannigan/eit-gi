@@ -1,4 +1,6 @@
 import numpy as np
+from collections import OrderedDict
+import struct
 
 __version__ = "0.1"
 __author__ = "Brett Hannigan"
@@ -20,6 +22,13 @@ class EITFrame:
         timing_error: A non-negative integer indicating a timing error has occurred.
         medibus: A float array of MEDIBUS values.
     """
+
+    block_sizes = OrderedDict([('time_stamp',8), ('dummy',4), ('image',4096), 
+        ('min_max_flag',4), ('event_marker',4), ('event_text',30), ('timing_error',4),
+        ('medibus',208)])
+    block_types = OrderedDict([('time_stamp','d'), ('dummy','f'), ('image','1024f'), 
+        ('min_max_flag','i'), ('event_marker','i'), ('event_text','30s'), ('timing_error','i'),
+        ('medibus','52f')])
 
     def __init__(self, time_stamp=None, dummy=None, image=None, min_max_flag=None, 
         event_marker=None, event_text=None, timing_error=None, medibus=None):
@@ -49,3 +58,9 @@ class EITFrame:
             self.medibus = []
         else:
             self.medibus = medibus
+
+    def unpack_frame(self, frame_bytes):
+        byte_index = 0
+        for i in iter(EITFrame.block_sizes.keys()):
+            setattr(self, i, struct.unpack(EITFrame.block_types[i], frame_bytes[byte_index:(byte_index+EITFrame.block_sizes[i]-1)]))
+            byte_index = byte_index + EITFrame.block_sizes[i]
