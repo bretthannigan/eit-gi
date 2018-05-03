@@ -62,5 +62,5 @@ class EITFrame:
     def unpack_frame(self, frame_bytes):
         byte_index = 0
         for i in iter(EITFrame.block_sizes.keys()):
-            setattr(self, i, struct.unpack(EITFrame.block_types[i], frame_bytes[byte_index:(byte_index+EITFrame.block_sizes[i]-1)]))
+            setattr(self, i, struct.unpack(EITFrame.block_types[i], frame_bytes[byte_index:(byte_index+EITFrame.block_sizes[i])]))
             byte_index = byte_index + EITFrame.block_sizes[i]

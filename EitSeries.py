@@ -1,4 +1,4 @@
-import EITFrame
+from EITFrame import EITFrame
 
 __version__ = "0.1"
 __author__ = "Brett Hannigan"
@@ -21,13 +21,14 @@ class EITSeries:
             for chunk in self.__read_frame_chunk(fid):
                 count += 1
                 frame = EITFrame()
-                self.add_frame(frame.unpack_frame(chunk))
+                frame.unpack_frame(chunk)
+                self.add_frame(frame)
             print('Imported ' + repr(count) + ' frames.')
 
     @staticmethod
     def __read_frame_chunk(fid):
         while True:
-            buf = f.read(sum(EITSeries.block_sizes.values()))
+            buf = fid.read(sum(EITFrame.block_sizes.values()))
             if buf:
                 yield buf
             else:
