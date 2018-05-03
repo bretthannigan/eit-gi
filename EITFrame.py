@@ -1,11 +1,19 @@
 import numpy as np
-from collections import OrderedDict
+import matplotlib.pyplot as plt
 import struct
+import datetime
+from collections import OrderedDict
+from enum import Enum
 
 __version__ = "0.1"
 __author__ = "Brett Hannigan"
 __email__ = "hanniganbrett@gmail.com"
 __date__ = "2018-04-26"
+
+class BreathPhaseMarker(Enum):
+    END_EXP = -1
+    NONE = 0
+    END_INSP = 1
 
 class EITFrame:
     """A frame of electrical impedance tomography data.
@@ -40,7 +48,7 @@ class EITFrame:
         else:
             self.__image = image
         if min_max_flag is None:
-            self.__min_max_flag = 0
+            self.__min_max_flag = BreathPhaseMarker.NONE
         else:
             self.__min_max_flag = min_max_flag
         if event_marker is None:
@@ -66,7 +74,7 @@ class EITFrame:
 
     @time_stamp.setter
     def time_stamp(self, value):
-        self.__time_stamp = EITFrame.__tuple_to_scalar(value)
+        self.__time_stamp = EITFrame.__float_to_time(EITFrame.__tuple_to_scalar(value))
 
     @property
     def dummy(self):
@@ -91,7 +99,7 @@ class EITFrame:
 
     @min_max_flag.setter
     def min_max_flag(self, value):
-        self.__min_max_flag = EITFrame.__tuple_to_scalar(value)
+        self.__min_max_flag = BreathPhaseMarker(EITFrame.__tuple_to_scalar(value))
 
     @property
     def event_marker(self):
@@ -123,9 +131,18 @@ class EITFrame:
             setattr(self, i, struct.unpack(EITFrame.block_types[i], frame_bytes[byte_index:(byte_index+EITFrame.block_sizes[i])]))
             byte_index = byte_index + EITFrame.block_sizes[i]
 
+    def show_image(self):
+        plt.imshow(self.__image, aspect="auto")
+        plt.show()
+
     @staticmethod
     def __tuple_to_scalar(tuple_value):
         if isinstance(tuple_value, tuple) and len(tuple_value)==1:
             return tuple_value[0]
         else:
             return tuple_value
+
+    @staticmethod
+    def __float_to_time(float_value):
+        time_ms = int(float_value*24*60*60*1e3)
+        return (datetime.datetime.min + datetime.timedelta(milliseconds=time_ms)).time()

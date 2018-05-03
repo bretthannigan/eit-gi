@@ -1,4 +1,4 @@
-from EITFrame import EITFrame
+from EITFrame import EITFrame, BreathPhaseMarker
 
 __version__ = "0.1"
 __author__ = "Brett Hannigan"
@@ -10,7 +10,8 @@ class EITSeries:
     def __init__(self, name, file_path):
         self.name = name
         self.eit_data = []
-        self.import_file(file_path)
+        n_frame = self.import_file(file_path)
+        print('Imported ' + repr(n_frame) + ' frames.')
 
     def add_frame(self, frame):
         self.eit_data.append(frame)
@@ -23,7 +24,7 @@ class EITSeries:
                 frame = EITFrame()
                 frame.unpack_frame(chunk)
                 self.add_frame(frame)
-            print('Imported ' + repr(count) + ' frames.')
+            return count
 
     @staticmethod
     def __read_frame_chunk(fid):
