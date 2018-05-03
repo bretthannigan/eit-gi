@@ -21,12 +21,31 @@ class EITFrame:
         medibus: A float array of MEDIBUS values.
     """
 
-    def __init__(self):
-        self.time_stamp = 0.0
-        self.dummy = 0.0
-        self.image = np.zeros((32, 32), np.float32)
-        self.min_max_flag = 0
-        self.event_marker = 0
-        self.event_text = ""
-        self.timing_error = 0
-        self.medibus = []
+    def __init__(self, time_stamp=None, dummy=None, image=None, min_max_flag=None, 
+        event_marker=None, event_text=None, timing_error=None, medibus=None):
+        self.time_stamp = time_stamp
+        self.dummy = dummy
+        if image is None:
+            self.image = np.zeros((32, 32), np.float32)
+        else:
+            self.image = image
+        if min_max_flag is None:
+            self.min_max_flag = 0
+        else:
+            self.min_max_flag = min_max_flag
+        if event_marker is None:
+            self.event_marker = 0
+        else:
+            self.event_marker = event_marker
+        if event_text is None:
+            self.event_text = ""
+        else:
+            self.event_text = event_text
+        if timing_error is None:
+            self.timing_error = 0
+        else:
+            self.timing_error = timing_error
+        if medibus is None:
+            self.medibus = []
+        else:
+            self.medibus = medibus
