@@ -1,4 +1,5 @@
 from EITFrame import EITFrame, BreathPhaseMarker, np
+import cv2
 
 __version__ = "0.1"
 __author__ = "Brett Hannigan"

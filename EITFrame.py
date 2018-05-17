@@ -77,14 +77,15 @@ class EITFrame:
         :return: self - other.
         :rtype: EITFrame
         """
-        self.__dummy -= other.__dummy
-        self.__image = np.subtract(self.__image, other.__image)
-        self.__min_max_flag = BreathPhaseMarker.TIDAL
-        self.__event_marker = None
-        self.__event_text = None
-        self.__timing_error += other.__timing_error
-        self.__medibus = [];
-        return self
+        difference = EITFrame(other.__time_stamp,
+            self.__dummy - other.__dummy,
+            np.subtract(self.__image, other.__image),
+            BreathPhaseMarker.TIDAL,
+            None,
+            None,
+            self.__timing_error + other.__timing_error,
+            [])
+        return difference
 
     @property
     def time_stamp(self):
@@ -198,7 +199,7 @@ class EITFrame:
         :return: GI index, as defined in [Zhao2009] (https://doi.org/10.1007/s00134-009-1589-y).
         :rtype: float
         """
-        return np.sum(self.__image[mask] - self.image_median(mask))/np.sum(self.__image[mask])
+        return np.sum(np.absolute(self.__image[mask] - self.image_median(mask)))/np.sum(self.__image[mask])
 
     def show_image(self, mask=np.ones((32, 32), dtype=bool)):
         """
@@ -206,8 +207,15 @@ class EITFrame:
 
         :param mask ndarray: (optional) array to mask off part of the image where mask is False.
         """
-        plt.imshow(self.__image[mask], aspect="auto")
+        image = np.copy(self.__image)
+        image[~mask] = 0
+        plt.imshow(image, aspect="auto")
         plt.show()
+
+    def save_image(self, mask=np.ones((32, 32), dtype=bool)):
+        image = np.copy(self.__image)
+        image[~mask] = 0
+        plt.imsave('image.png', image)
 
     @staticmethod
     def __tuple_to_scalar(tuple_value):
@@ -233,3 +241,14 @@ class EITFrame:
         """
         time_ms = int(float_value*24*60*60*1e3)
         return (datetime.datetime.min + datetime.timedelta(milliseconds=time_ms)).time()
+
+    @staticmethod
+    def __time_to_float(time_value):
+        """
+        Helper method for time object to Excel-style float conversion.
+
+        :param time_value float: time object to be converted.
+        :return: fractional day with millisecond precision.
+        :rtype: float
+        """
+        return time_value.hour/24 + time_value.minute/(24*60) + time_value.second/(24*60*60) + round(time_value.microsecond, 3)/(24*60*60*1e6)
